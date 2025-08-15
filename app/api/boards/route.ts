@@ -37,6 +37,7 @@ export async function GET() {
             notes: {
               where: {
                 deletedAt: null,
+                archivedAt: null,
               },
             },
           },
