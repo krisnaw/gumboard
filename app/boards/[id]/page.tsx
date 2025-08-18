@@ -9,7 +9,6 @@ import { Switch } from "@/components/ui/switch";
 import { ChevronDown, Search, Copy, Trash2, Settings, X } from "lucide-react";
 import Link from "next/link";
 import { BetaBadge } from "@/components/ui/beta-badge";
-import { FullPageLoader } from "@/components/ui/loader";
 import { FilterPopover } from "@/components/ui/filter-popover";
 import { Note as NoteCard } from "@/components/note";
 
@@ -36,6 +35,7 @@ import {
   calculateMobileLayout,
   filterAndSortNotes,
 } from "@/lib/utils";
+import { BoardPageSkeleton } from "@/components/board-skeleton";
 
 export default function BoardPage({ params }: { params: Promise<{ id: string }> }) {
   const [board, setBoard] = useState<Board | null>(null);
@@ -619,7 +619,7 @@ export default function BoardPage({ params }: { params: Promise<{ id: string }> 
   };
 
   if (userLoading || notesloading) {
-    return <FullPageLoader message="Loading board..." />;
+    return <BoardPageSkeleton />;
   }
 
   if (!board && boardId !== "all-notes" && boardId !== "archive") {
