@@ -9,11 +9,16 @@ import React, {
   useCallback,
 } from "react";
 
+export type Subscription = {
+  status: string;
+}
+
 export type Organization = {
   id: string;
   name: string;
   slackWebhookUrl?: string | null;
   members: User[];
+  subscription: string | null;
 };
 
 export type User = {

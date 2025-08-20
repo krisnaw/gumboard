@@ -25,6 +25,11 @@ export async function GET() {
                 isAdmin: true,
               },
             },
+            subscription: {
+              select: {
+                status: true
+              }
+            }
           },
         },
       },
@@ -46,6 +51,7 @@ export async function GET() {
             name: user.organization.name,
             slackWebhookUrl: user.organization.slackWebhookUrl,
             members: user.organization.members,
+            subscription: user.organization.subscription?.status
           }
         : null,
     });
