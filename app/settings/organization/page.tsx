@@ -14,7 +14,7 @@ import {
   Copy,
   Calendar,
   Users,
-  ExternalLink,
+  ExternalLink, Crown,
 } from "lucide-react";
 import { Loader } from "@/components/ui/loader";
 import {
@@ -640,6 +640,31 @@ export default function OrganizationSettingsPage() {
               </div>
             ))}
           </div>
+
+          {user?.organization?.members && user?.organization?.members?.length >= 2 && !user?.organization?.subscription && (
+            <div className="flex items-center justify-between p-2 lg:p-4 bg-yellow-50 dark:bg-zinc-200 rounded-lg border border-yellow-400 dark:border-zinc-100">
+
+              <div className="flex justify-between items-center w-full">
+                <div className="flex items-center space-x-2">
+                  <Crown />
+                  <div className="font-medium">
+                    Free plan: 1 Member limit
+                  </div>
+                </div>
+                <div>
+                  <Button asChild>
+                    <a target="_blank" href={`${payment_link}?prefilled_email=${user?.email}`}>
+                      Subscribe
+                    </a>
+                  </Button>
+                </div>
+              </div>
+
+
+
+            </div>
+          )}
+
         </div>
       </Card>
 
@@ -687,21 +712,6 @@ export default function OrganizationSettingsPage() {
             </div>
           )}
 
-          {!user?.organization?.subscription && (
-            <div className="text-white">
-              <div data-testid="subscription-message">
-                Upgrade to the Team plan for $9/month to invite more than 2 members.
-              </div>
-
-              <div className="mt-2">
-                <Button asChild>
-                  <a target="_blank" href={`${payment_link}?prefilled_email=${user?.email}`}>
-                    Subscribe
-                  </a>
-                </Button>
-              </div>
-            </div>
-          )}
 
           <div className="text-white">
             { user?.organization?.members && user?.organization?.members?.length < limit_member && (
