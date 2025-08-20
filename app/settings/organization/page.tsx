@@ -105,7 +105,7 @@ export default function OrganizationSettingsPage() {
       setSlackWebhookUrl(slackWebhookValue);
       setOriginalSlackWebhookUrl(slackWebhookValue);
     }
-  }, [user?.organization?.name, user?.organization?.slackWebhookUrl]);
+  }, [user?.organization, user?.organization?.name, user?.organization?.slackWebhookUrl]);
 
   useEffect(() => {
     if (!loading && !user) {
