@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import {Card} from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -14,7 +14,8 @@ import {
   Copy,
   Calendar,
   Users,
-  ExternalLink, Crown,
+  ExternalLink,
+  Crown,
 } from "lucide-react";
 import { Loader } from "@/components/ui/loader";
 import {
@@ -32,7 +33,7 @@ import { useUser } from "@/app/contexts/UserContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
 import { SLACK_WEBHOOK_REGEX } from "@/lib/constants";
-import {toast} from "sonner";
+import { toast } from "sonner";
 
 interface OrganizationInvite {
   id: string;
@@ -439,7 +440,7 @@ export default function OrganizationSettingsPage() {
         method: "POST",
         body: JSON.stringify({
           subscriptionId: stripeSubscriptionId,
-        })
+        }),
       });
 
       if (!res.ok) {
@@ -448,11 +449,10 @@ export default function OrganizationSettingsPage() {
 
       toast.success("Subscription cancelled successfully!");
       await refreshUser();
-
     } catch (err) {
       console.error("Error canceling subscription:", err);
     }
-  }
+  };
 
   if (loading) {
     return (
@@ -641,30 +641,25 @@ export default function OrganizationSettingsPage() {
             ))}
           </div>
 
-          {user?.organization?.members && user?.organization?.members?.length >= 2 && !user?.organization?.subscription && (
-            <div className="flex items-center justify-between p-2 lg:p-4 bg-yellow-50 dark:bg-zinc-200 rounded-lg border border-yellow-400 dark:border-zinc-100">
-
-              <div className="flex justify-between items-center w-full">
-                <div className="flex items-center space-x-2">
-                  <Crown />
-                  <div className="font-medium">
-                    Free plan: 1 Member limit
+          {user?.organization?.members &&
+            user?.organization?.members?.length >= 2 &&
+            !user?.organization?.subscription && (
+              <div className="flex items-center justify-between p-2 lg:p-4 bg-yellow-50 dark:bg-zinc-200 rounded-lg border border-yellow-400 dark:border-zinc-100">
+                <div className="flex justify-between items-center w-full">
+                  <div className="flex items-center space-x-2">
+                    <Crown />
+                    <div className="font-medium">Free plan: 1 Member limit</div>
+                  </div>
+                  <div>
+                    <Button asChild>
+                      <a target="_blank" href={`${payment_link}?prefilled_email=${user?.email}`}>
+                        Subscribe
+                      </a>
+                    </Button>
                   </div>
                 </div>
-                <div>
-                  <Button asChild>
-                    <a target="_blank" href={`${payment_link}?prefilled_email=${user?.email}`}>
-                      Subscribe
-                    </a>
-                  </Button>
-                </div>
               </div>
-
-
-
-            </div>
-          )}
-
+            )}
         </div>
       </Card>
 
@@ -680,16 +675,23 @@ export default function OrganizationSettingsPage() {
             </p>
           </div>
 
-
           {user?.organization?.subscription?.status == "ACTIVE" && (
             <div>
               <div className="text-white">
                 You are currently on a paid plan until
-                <span className="ml-1.5">{new Date(user?.organization.subscription.currentPeriodEnd).toLocaleDateString()}</span>
+                <span className="ml-1.5">
+                  {new Date(user?.organization.subscription.currentPeriodEnd).toLocaleDateString()}
+                </span>
               </div>
 
               <div className="mt-2">
-                <Button onClick={() => handleCancelSubscription(String(user?.organization?.subscription.stripeSubscriptionId))}>
+                <Button
+                  onClick={() =>
+                    handleCancelSubscription(
+                      String(user?.organization?.subscription.stripeSubscriptionId)
+                    )
+                  }
+                >
                   Cancel Subscription
                 </Button>
               </div>
@@ -698,9 +700,7 @@ export default function OrganizationSettingsPage() {
 
           {user?.organization?.subscription?.status == "CANCELED" && (
             <div>
-              <div className="text-white">
-                Your subscription is canceled.
-              </div>
+              <div className="text-white">Your subscription is canceled.</div>
 
               <div className="mt-2">
                 <Button asChild>
@@ -712,12 +712,9 @@ export default function OrganizationSettingsPage() {
             </div>
           )}
 
-
           <div className="text-white">
-            { user?.organization?.members && user?.organization?.members?.length < limit_member && (
+            {user?.organization?.members && user?.organization?.members?.length < limit_member && (
               <form onSubmit={handleInviteMember} className="flex space-x-4">
-
-
                 <div className="flex-1">
                   <Input
                     type="email"
@@ -738,13 +735,15 @@ export default function OrganizationSettingsPage() {
                     title={!user?.isAdmin ? "Only admins can invite new team members" : undefined}
                   >
                     <UserPlus className="w-4 h-4 mr-2" />
-                    {inviting ?
-                      ("Inviting...") :
-                      (<><span className="hidden lg:inline">Send Invite</span></>)
-                    }
+                    {inviting ? (
+                      "Inviting..."
+                    ) : (
+                      <>
+                        <span className="hidden lg:inline">Send Invite</span>
+                      </>
+                    )}
                   </Button>
                 </div>
-
               </form>
             )}
           </div>
@@ -754,8 +753,6 @@ export default function OrganizationSettingsPage() {
               {user?.organization?.subscription?.status == "ACTIVE" && (
                 <div>
                   <form onSubmit={handleInviteMember} className="flex space-x-4">
-
-
                     <div className="flex-1">
                       <Input
                         type="email"
@@ -773,23 +770,25 @@ export default function OrganizationSettingsPage() {
                         type="submit"
                         disabled={inviting || !user?.isAdmin}
                         className="disabled:bg-gray-400 disabled:cursor-not-allowed bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white dark:text-zinc-100"
-                        title={!user?.isAdmin ? "Only admins can invite new team members" : undefined}
+                        title={
+                          !user?.isAdmin ? "Only admins can invite new team members" : undefined
+                        }
                       >
                         <UserPlus className="w-4 h-4 mr-2" />
-                        {inviting ?
-                          ("Inviting...") :
-                          (<><span className="hidden lg:inline">Send Invite</span></>)
-                        }
+                        {inviting ? (
+                          "Inviting..."
+                        ) : (
+                          <>
+                            <span className="hidden lg:inline">Send Invite</span>
+                          </>
+                        )}
                       </Button>
                     </div>
-
                   </form>
                 </div>
               )}
-
             </>
           )}
-
 
           {/* Pending Invites */}
           {invites.length > 0 && (

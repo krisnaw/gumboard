@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import {User as UserIcon, Building2, ArrowLeft} from "lucide-react";
+import { User as UserIcon, Building2, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { BetaBadge } from "@/components/ui/beta-badge";
 import { ProfileDropdown } from "@/components/profile-dropdown";
@@ -73,7 +73,6 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
                 <Building2 className="w-4 h-4 sm:w-5 sm:h-5 mr-2 sm:mr-3" />
                 <span className="text-sm sm:text-base whitespace-nowrap">Organization</span>
               </Link>
-
             </nav>
           </div>
           <div className="flex-1">{children}</div>

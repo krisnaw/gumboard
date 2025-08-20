@@ -1,13 +1,13 @@
-import {NextRequest, NextResponse} from "next/server";
-import Stripe from 'stripe';
-import {db} from "@/lib/db";
+import { NextRequest, NextResponse } from "next/server";
+import Stripe from "stripe";
+import { db } from "@/lib/db";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 export async function POST(request: NextRequest) {
   const body = await request.text();
   const signature = request.headers.get("stripe-signature")!;
-  const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!
+  const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
 
   // Webhook secret is required for verification
   if (!endpointSecret) {
@@ -24,38 +24,40 @@ export async function POST(request: NextRequest) {
     if (err instanceof Error) {
       errorMessage = err.message;
     }
-    return NextResponse.json({"error": errorMessage}, {status: 400})
+    return NextResponse.json({ error: errorMessage }, { status: 400 });
   }
 
   try {
     switch (event.type) {
-      case 'checkout.session.completed':
+      case "checkout.session.completed":
         // Handle when a user completes payment for subscription
         // Get user from Stripe
-        const session: Stripe.Checkout.Session = await stripe.checkout.sessions.retrieve(event.data.object.id, {expand: ['line_items']});
-        const invoice: Stripe.Invoice = await stripe.invoices.retrieve(String(session.invoice))
+        const session: Stripe.Checkout.Session = await stripe.checkout.sessions.retrieve(
+          event.data.object.id,
+          { expand: ["line_items"] }
+        );
+        const invoice: Stripe.Invoice = await stripe.invoices.retrieve(String(session.invoice));
 
         // Get the user by email
         const user = await db.user.findUnique({
-          where: {email: String(session.customer_details?.email)},
+          where: { email: String(session.customer_details?.email) },
           include: {
-            organization: true
+            organization: true,
           },
         });
 
         /// If a user exists, store subscription
         if (user) {
-
           // Get the subscription by customer and check if it already canceled or not
           const existingSubscription = await db.subscription.findFirst({
-            where: {organizationId: String(user.organization?.id)}
+            where: { organizationId: String(user.organization?.id) },
           });
 
           if (existingSubscription) {
             // If user exists, update subscription
             await db.subscription.update({
               where: {
-                id: String(existingSubscription.id)
+                id: String(existingSubscription.id),
               },
               data: {
                 stripeSubscriptionId: String(session.subscription),
@@ -63,8 +65,8 @@ export async function POST(request: NextRequest) {
                 currentPeriodEnd: new Date(invoice.period_end * 1000),
                 status: "ACTIVE",
                 cancelAtPeriodEnd: false,
-              }
-            })
+              },
+            });
           } else {
             // If user doesn't exist, create subscription'
             await db.subscription.create({
@@ -76,31 +78,33 @@ export async function POST(request: NextRequest) {
                 currentPeriodEnd: new Date(invoice.period_end * 1000),
                 status: "ACTIVE",
                 cancelAtPeriodEnd: false,
-              }
-            })
+              },
+            });
           }
         }
         break;
-      case 'customer.subscription.deleted':
+      case "customer.subscription.deleted":
         // Handle when user cancels subscription
         // Get the subscription details from Stripe
-        const stripeSubscription: Stripe.Subscription = await stripe.subscriptions.retrieve(event.data.object.id);
+        const stripeSubscription: Stripe.Subscription = await stripe.subscriptions.retrieve(
+          event.data.object.id
+        );
 
         // Get the subscription by customer and check if it already canceled or not
         const subscription = await db.subscription.findFirst({
-          where: {stripeCustomerId: String(stripeSubscription.customer)}
+          where: { stripeCustomerId: String(stripeSubscription.customer) },
         });
 
         if (subscription) {
           await db.subscription.update({
             where: {
-              id: String(subscription.id)
+              id: String(subscription.id),
             },
             data: {
               status: "CANCELED",
               cancelAtPeriodEnd: true,
-            }
-          })
+            },
+          });
         }
 
         break;
@@ -112,8 +116,8 @@ export async function POST(request: NextRequest) {
     if (err instanceof Error) {
       errorMessage = err.message;
     }
-    return NextResponse.json({"error": errorMessage}, {status: 400})
+    return NextResponse.json({ error: errorMessage }, { status: 400 });
   }
 
-  return NextResponse.json({"Success": "Ok"}, {status: 200})
+  return NextResponse.json({ Success: "Ok" }, { status: 200 });
 }

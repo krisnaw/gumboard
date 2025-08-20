@@ -31,9 +31,9 @@ export async function GET() {
                 currentPeriodStart: true,
                 currentPeriodEnd: true,
                 stripeSubscriptionId: true,
-                cancelAtPeriodEnd: true
-              }
-            }
+                cancelAtPeriodEnd: true,
+              },
+            },
           },
         },
       },
@@ -55,7 +55,7 @@ export async function GET() {
             name: user.organization.name,
             slackWebhookUrl: user.organization.slackWebhookUrl,
             members: user.organization.members,
-            subscription: user.organization.subscription
+            subscription: user.organization.subscription,
           }
         : null,
     });

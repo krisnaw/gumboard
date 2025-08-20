@@ -15,14 +15,14 @@ export type Subscription = {
   currentPeriodEnd: Date;
   stripeSubscriptionId: string;
   cancelAtPeriodEnd: boolean;
-}
+};
 
 export type Organization = {
   id: string;
   name: string;
   slackWebhookUrl?: string | null;
   members: User[];
-  subscription: Subscription
+  subscription: Subscription;
 };
 
 export type User = {
