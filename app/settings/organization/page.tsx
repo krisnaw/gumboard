@@ -58,6 +58,9 @@ interface SelfServeInvite {
 
 export default function OrganizationSettingsPage() {
   const { user, loading, refreshUser } = useUser();
+
+  const limit_member: number = 2;
+
   const payment_link = process.env.NEXT_PUBLIC_PAYMENT_LINK; // REQUIRED
   const router = useRouter();
   const [saving, setSaving] = useState(false);
@@ -653,21 +656,6 @@ export default function OrganizationSettingsPage() {
           </div>
 
 
-          { user?.organization?.members && user?.organization?.members?.length > 0 && !user?.organization?.subscription && (
-            <div className="text-white">
-
-              <div>
-                Upgrade to the Team plan for $9/month to invite more than 2 members.
-              </div>
-
-              <Button asChild>
-                <a target="_blank" href={`${payment_link}?prefilled_email=${user?.email}`}>
-                  Subscribe
-                </a>
-              </Button>
-            </div>
-          )}
-
           {user?.organization?.subscription?.status == "ACTIVE" && (
             <div>
               <div className="text-white">
@@ -675,7 +663,7 @@ export default function OrganizationSettingsPage() {
                 <span className="ml-1.5">{new Date(user?.organization.subscription.currentPeriodEnd).toLocaleDateString()}</span>
               </div>
 
-              <div>
+              <div className="mt-2">
                 <Button onClick={() => handleCancelSubscription(String(user?.organization?.subscription.stripeSubscriptionId))}>
                   Cancel Subscription
                 </Button>
@@ -686,10 +674,10 @@ export default function OrganizationSettingsPage() {
           {user?.organization?.subscription?.status == "CANCELED" && (
             <div>
               <div className="text-white">
-                Your subscription will end on {new Date(user?.organization.subscription.currentPeriodEnd).toLocaleDateString()}, but you still have access until then.
+                Your subscription is canceled.
               </div>
 
-              <div>
+              <div className="mt-2">
                 <Button asChild>
                   <a target="_blank" href={`${payment_link}?prefilled_email=${user?.email}`}>
                     Resume Subscription
@@ -699,38 +687,99 @@ export default function OrganizationSettingsPage() {
             </div>
           )}
 
+          {!user?.organization?.subscription && (
+            <div className="text-white">
+              <div data-testid="subscription-message">
+                Upgrade to the Team plan for $9/month to invite more than 2 members.
+              </div>
 
-          <form onSubmit={handleInviteMember} className="flex space-x-4">
-            <div className="flex-1">
-              <Input
-                type="email"
-                value={inviteEmail}
-                onChange={(e) => setInviteEmail(e.target.value)}
-                placeholder="Enter email address"
-                required
-                disabled={!user?.isAdmin}
-                className="bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
-              />
-            </div>
-
-            {user?.organization?.subscription?.status == "ACTIVE" && (
-              <div>
-                <Button
-                  type="submit"
-                  disabled={inviting || !user?.isAdmin}
-                  className="disabled:bg-gray-400 disabled:cursor-not-allowed bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white dark:text-zinc-100"
-                  title={!user?.isAdmin ? "Only admins can invite new team members" : undefined}
-                >
-                  <UserPlus className="w-4 h-4 mr-2" />
-                  {inviting ?
-                    ("Inviting...") :
-                    (<><span className="hidden lg:inline">Send Invite</span></>)
-                  }
+              <div className="mt-2">
+                <Button asChild>
+                  <a target="_blank" href={`${payment_link}?prefilled_email=${user?.email}`}>
+                    Subscribe
+                  </a>
                 </Button>
               </div>
-            )}
+            </div>
+          )}
 
-          </form>
+          <div className="text-white">
+            { user?.organization?.members && user?.organization?.members?.length < limit_member && (
+              <form onSubmit={handleInviteMember} className="flex space-x-4">
+
+
+                <div className="flex-1">
+                  <Input
+                    type="email"
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
+                    placeholder="Enter email address"
+                    required
+                    disabled={!user?.isAdmin}
+                    className="bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
+                  />
+                </div>
+
+                <div>
+                  <Button
+                    type="submit"
+                    disabled={inviting || !user?.isAdmin}
+                    className="disabled:bg-gray-400 disabled:cursor-not-allowed bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white dark:text-zinc-100"
+                    title={!user?.isAdmin ? "Only admins can invite new team members" : undefined}
+                  >
+                    <UserPlus className="w-4 h-4 mr-2" />
+                    {inviting ?
+                      ("Inviting...") :
+                      (<><span className="hidden lg:inline">Send Invite</span></>)
+                    }
+                  </Button>
+                </div>
+
+              </form>
+            )}
+          </div>
+
+          {user?.organization?.members && user?.organization?.members?.length >= limit_member && (
+            <>
+              {user?.organization?.subscription?.status == "ACTIVE" && (
+                <div>
+                  <form onSubmit={handleInviteMember} className="flex space-x-4">
+
+
+                    <div className="flex-1">
+                      <Input
+                        type="email"
+                        value={inviteEmail}
+                        onChange={(e) => setInviteEmail(e.target.value)}
+                        placeholder="Enter email address"
+                        required
+                        disabled={!user?.isAdmin}
+                        className="bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
+                      />
+                    </div>
+
+                    <div>
+                      <Button
+                        type="submit"
+                        disabled={inviting || !user?.isAdmin}
+                        className="disabled:bg-gray-400 disabled:cursor-not-allowed bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white dark:text-zinc-100"
+                        title={!user?.isAdmin ? "Only admins can invite new team members" : undefined}
+                      >
+                        <UserPlus className="w-4 h-4 mr-2" />
+                        {inviting ?
+                          ("Inviting...") :
+                          (<><span className="hidden lg:inline">Send Invite</span></>)
+                        }
+                      </Button>
+                    </div>
+
+                  </form>
+                </div>
+              )}
+
+            </>
+          )}
+
 
           {/* Pending Invites */}
           {invites.length > 0 && (
