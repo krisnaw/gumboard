@@ -40,19 +40,41 @@ export async function POST(request: NextRequest) {
 
         /// If a user exists, store subscription
         if (user) {
-          await db.subscription.create({
-            data: {
-              organizationId: String(user.organization?.id),
-              stripeCustomerId: String(session.customer),
-              stripeSubscriptionId: String(session.subscription),
-              currentPeriodStart: new Date(invoice.period_start * 1000),
-              currentPeriodEnd: new Date(invoice.period_end * 1000),
-              status: "ACTIVE",
-              cancelAtPeriodEnd: false,
-            }
-          })
-        }
 
+          // Get the subscription by customer and check if it already canceled or not
+          const existingSubscription = await db.subscription.findFirst({
+            where: {organizationId: String(user.organization?.id)}
+          });
+
+          if (existingSubscription) {
+            // If user exists, update subscription
+            await db.subscription.update({
+              where: {
+                id: String(existingSubscription.id)
+              },
+              data: {
+                stripeSubscriptionId: String(session.subscription),
+                currentPeriodStart: new Date(invoice.period_start * 1000),
+                currentPeriodEnd: new Date(invoice.period_end * 1000),
+                status: "ACTIVE",
+                cancelAtPeriodEnd: false,
+              }
+            })
+          } else {
+            // If user doesn't exist, create subscription'
+            await db.subscription.create({
+              data: {
+                organizationId: String(user.organization?.id),
+                stripeCustomerId: String(session.customer),
+                stripeSubscriptionId: String(session.subscription),
+                currentPeriodStart: new Date(invoice.period_start * 1000),
+                currentPeriodEnd: new Date(invoice.period_end * 1000),
+                status: "ACTIVE",
+                cancelAtPeriodEnd: false,
+              }
+            })
+          }
+        }
         break;
       case 'customer.subscription.deleted':
         // Handle when user cancels subscription

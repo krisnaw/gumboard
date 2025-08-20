@@ -11,6 +11,10 @@ import React, {
 
 export type Subscription = {
   status: string;
+  currentPeriodStart: Date;
+  currentPeriodEnd: Date;
+  stripeSubscriptionId: string;
+  cancelAtPeriodEnd: boolean;
 }
 
 export type Organization = {
@@ -18,7 +22,7 @@ export type Organization = {
   name: string;
   slackWebhookUrl?: string | null;
   members: User[];
-  subscription: string | null;
+  subscription: Subscription
 };
 
 export type User = {

@@ -70,33 +70,33 @@ export default function Subscription() {
           </Card>
         )}
 
-        {user?.organization?.subscription == "INACTIVE" && (
-          <Card>
-            <CardHeader>
-              <CardTitle>
-                Subscription
-              </CardTitle>
-              <CardDescription>
-                Manage your subscription
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
+        <Card>
+          <CardHeader>
+            <CardTitle>
+              Subscription
+            </CardTitle>
+            <CardDescription>
+              Manage your subscription
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
 
-              <div className="flex space-x-4">
-                {plans.map((item: Plan, index) => (
-                  <div  key={index}>
-                    <Button asChild>
-                      <a target="_blank" href={`${item.payment_link}?prefilled_email=${user?.email}`}>
-                        Subscribe {item.name}
-                      </a>
-                    </Button>
-                  </div>
-                ))}
-              </div>
+            <div className="flex space-x-4">
+              {plans.map((item: Plan, index) => (
+                <div  key={index}>
+                  <Button asChild>
+                    <a target="_blank" href={`${item.payment_link}?prefilled_email=${user?.email}`}>
+                      Subscribe {item.name}
+                    </a>
+                  </Button>
+                </div>
+              ))}
+            </div>
 
-            </CardContent>
-          </Card>
-        )}
+          </CardContent>
+        </Card>
+
+
 
 
 

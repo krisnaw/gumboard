@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import {Card, CardAction, CardHeader, CardTitle} from "@/components/ui/card";
+import {Card} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -32,6 +32,7 @@ import { useUser } from "@/app/contexts/UserContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
 import { SLACK_WEBHOOK_REGEX } from "@/lib/constants";
+import {toast} from "sonner";
 
 interface OrganizationInvite {
   id: string;
@@ -55,11 +56,9 @@ interface SelfServeInvite {
   };
 }
 
-const payment_link =  "https://buy.stripe.com/test_00wbJ19pHd8i5lIcPM7AI01";
-
 export default function OrganizationSettingsPage() {
   const { user, loading, refreshUser } = useUser();
-  console.log(user);
+  const payment_link = process.env.NEXT_PUBLIC_PAYMENT_LINK; // REQUIRED
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [orgName, setOrgName] = useState("");
@@ -431,6 +430,27 @@ export default function OrganizationSettingsPage() {
     }
   };
 
+  const handleCancelSubscription = async (stripeSubscriptionId: string) => {
+    try {
+      const res = await fetch("/api/subscription", {
+        method: "POST",
+        body: JSON.stringify({
+          subscriptionId: stripeSubscriptionId,
+        })
+      });
+
+      if (!res.ok) {
+        toast.info("Sorry, something went wrong. Please try again later.");
+      }
+
+      toast.success("Subscription cancelled successfully!");
+      await refreshUser();
+
+    } catch (err) {
+      console.error("Error canceling subscription:", err);
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8 bg-white dark:bg-black min-h-[60vh]">
@@ -637,7 +657,7 @@ export default function OrganizationSettingsPage() {
             <div className="text-white">
 
               <div>
-                You need to subscribe to a team plat US$9/month
+                Upgrade to the Team plan for $9/month to invite more than 2 members.
               </div>
 
               <Button asChild>
@@ -648,11 +668,37 @@ export default function OrganizationSettingsPage() {
             </div>
           )}
 
-          {user?.organization?.subscription == "ACTIVE" && (
-            <div className="text-white">
-              You are currently on a paid plan.
+          {user?.organization?.subscription?.status == "ACTIVE" && (
+            <div>
+              <div className="text-white">
+                You are currently on a paid plan until
+                <span className="ml-1.5">{new Date(user?.organization.subscription.currentPeriodEnd).toLocaleDateString()}</span>
+              </div>
+
+              <div>
+                <Button onClick={() => handleCancelSubscription(String(user?.organization?.subscription.stripeSubscriptionId))}>
+                  Cancel Subscription
+                </Button>
+              </div>
             </div>
           )}
+
+          {user?.organization?.subscription?.status == "CANCELED" && (
+            <div>
+              <div className="text-white">
+                Your subscription will end on {new Date(user?.organization.subscription.currentPeriodEnd).toLocaleDateString()}, but you still have access until then.
+              </div>
+
+              <div>
+                <Button asChild>
+                  <a target="_blank" href={`${payment_link}?prefilled_email=${user?.email}`}>
+                    Resume Subscription
+                  </a>
+                </Button>
+              </div>
+            </div>
+          )}
+
 
           <form onSubmit={handleInviteMember} className="flex space-x-4">
             <div className="flex-1">
@@ -667,8 +713,7 @@ export default function OrganizationSettingsPage() {
               />
             </div>
 
-
-            { user?.organization?.subscription == "ACTIVE" && (
+            {user?.organization?.subscription?.status == "ACTIVE" && (
               <div>
                 <Button
                   type="submit"
