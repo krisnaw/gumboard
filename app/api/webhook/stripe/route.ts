@@ -7,7 +7,12 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 export async function POST(request: NextRequest) {
   const body = await request.text();
   const signature = request.headers.get("stripe-signature")!;
-  const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET ?? "whsec_d529bbd96d2bf80621e976f5ea63d845d27a2f5d16d384195157e30073413150"
+  const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!
+
+  // Webhook secret is required for verification
+  if (!endpointSecret) {
+    throw new Error("Stripe endpoint secret is not defined");
+  }
 
   let event: Stripe.Event;
   // Verify the webhook signature and extract the event.
