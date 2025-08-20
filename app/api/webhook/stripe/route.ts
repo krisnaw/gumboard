@@ -48,6 +48,7 @@ export async function POST(request: NextRequest) {
               currentPeriodStart: new Date(invoice.period_start * 1000),
               currentPeriodEnd: new Date(invoice.period_end * 1000),
               status: "ACTIVE",
+              cancelAtPeriodEnd: false,
             }
           })
         }
@@ -55,20 +56,25 @@ export async function POST(request: NextRequest) {
         break;
       case 'customer.subscription.deleted':
         // Handle when user cancels subscription
-        console.log(event)
-
         // Get the subscription details from Stripe
-        const subscription: Stripe.Subscription = await stripe.subscriptions.retrieve(event.data.object.id);
+        const stripeSubscription: Stripe.Subscription = await stripe.subscriptions.retrieve(event.data.object.id);
 
-        // Set the subscription status to "CANCELED"
-        const update = await db.subscription.update({
-          where: {
-            stripeCustomerId: subscription.customer as string,
-          },
-          data: {
-            status: "CANCELED",
-          },
-        })
+        // Get the subscription by customer and check if it already canceled or not
+        const subscription = await db.subscription.findFirst({
+          where: {stripeCustomerId: String(stripeSubscription.customer)}
+        });
+
+        if (subscription) {
+          await db.subscription.update({
+            where: {
+              id: String(subscription.id)
+            },
+            data: {
+              status: "CANCELED",
+              cancelAtPeriodEnd: true,
+            }
+          })
+        }
 
         break;
       default:
