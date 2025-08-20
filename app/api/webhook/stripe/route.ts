@@ -6,86 +6,59 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 export async function POST(request: NextRequest) {
   const body = await request.text();
-
-
   const signature = request.headers.get("stripe-signature")!;
-  const endpointSecret = "whsec_d529bbd96d2bf80621e976f5ea63d845d27a2f5d16d384195157e30073413150"
+  const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET ?? "whsec_d529bbd96d2bf80621e976f5ea63d845d27a2f5d16d384195157e30073413150"
 
-  let event;
-
-
+  let event: Stripe.Event;
+  // Verify the webhook signature and extract the event.
+  // See https://stripe.com/docs/webhooks/signatures for more information.
   try {
     event = stripe.webhooks.constructEvent(body, signature, endpointSecret);
   } catch (err) {
-    // @ts-ignore
-    console.log(`⚠️ Webhook signature verification failed.`, err.message);
-    // @ts-ignore
-    return NextResponse.json({"Success": "Ok"}, {status: 200})
+    let errorMessage = "Sorry, something wrong";
+    if (err instanceof Error) {
+      errorMessage = err.message;
+    }
+    return NextResponse.json({"error": errorMessage}, {status: 400})
   }
 
-  // Handle the event
-
-  const data = event.data;
-  const eventType = event.type;
-
   try {
-    switch (eventType) {
+    switch (event.type) {
       case 'checkout.session.completed':
-        // Handle when user completes payment for subscription
+        // Handle when a user completes payment for subscription
+        // Get user from Stripe
+        const session: Stripe.Checkout.Session = await stripe.checkout.sessions.retrieve(event.data.object.id, {expand: ['line_items']});
+        const invoice: Stripe.Invoice = await stripe.invoices.retrieve(String(session.invoice))
 
-        const session = await stripe.checkout.sessions.retrieve(data.object.id, {
-          expand: ['line_items'],
+        // Get the user by email
+        const user = await db.user.findUnique({
+          where: {email: String(session.customer_details?.email)},
+          include: {
+            organization: true
+          },
         });
-        const customerId = session?.customer;
-        const customer = await stripe.customers.retrieve(customerId);
-        const priceId = session?.line_items?.data[0]?.price.id;
-        const subscriptionId = session?.subscription;
 
-
-        console.log(session)
-        console.log(customerId)
-        console.log(priceId)
-        console.log(customer)
-
-
-        if (customer.email) {
-          const user = await db.user.findUnique({
-            where: { email: customer.email },
-            include: {
-              organization: true
-            },
-          });
-          console.log("user", user)
-
-          // Store subscription
-          if (user?.organization) {
-            await db.subscription.create({
-              data: {
-                organizationId: user.organization.id,
-                stripeCustomerId: customerId,
-                stripeSubscriptionId: subscriptionId,
-                status : "ACTIVE",
-              }
-            })
-          }
-
+        /// If a user exists, store subscription
+        if (user) {
+          await db.subscription.create({
+            data: {
+              organizationId: String(user.organization?.id),
+              stripeCustomerId: String(session.customer),
+              stripeSubscriptionId: String(session.subscription),
+              currentPeriodStart: new Date(invoice.period_start * 1000),
+              currentPeriodEnd: new Date(invoice.period_end * 1000),
+              status: "ACTIVE",
+            }
+          })
         }
-
-
 
         break;
       case 'customer.subscription.deleted':
         // Handle when user cancels subscription
         console.log(event)
 
-
         // Get the subscription details from Stripe
-        const subscription = await stripe.subscriptions.retrieve(
-          data.object.id
-        );
-
-        console.log(subscription)
-
+        const subscription: Stripe.Subscription = await stripe.subscriptions.retrieve(event.data.object.id);
 
         // Set the subscription status to "CANCELED"
         const update = await db.subscription.update({
@@ -97,14 +70,16 @@ export async function POST(request: NextRequest) {
           },
         })
 
-        console.log(update)
-
         break;
       default:
         return;
     }
   } catch (err) {
-    console.log(err.message)
+    let errorMessage = "Sorry, something wrong";
+    if (err instanceof Error) {
+      errorMessage = err.message;
+    }
+    return NextResponse.json({"error": errorMessage}, {status: 400})
   }
 
   return NextResponse.json({"Success": "Ok"}, {status: 200})
