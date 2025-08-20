@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import {Card, CardAction, CardHeader, CardTitle} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -55,8 +55,11 @@ interface SelfServeInvite {
   };
 }
 
+const payment_link =  "https://buy.stripe.com/test_00wbJ19pHd8i5lIcPM7AI01";
+
 export default function OrganizationSettingsPage() {
   const { user, loading, refreshUser } = useUser();
+  console.log(user);
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [orgName, setOrgName] = useState("");
@@ -629,6 +632,28 @@ export default function OrganizationSettingsPage() {
             </p>
           </div>
 
+
+          { user?.organization?.members && user?.organization?.members?.length > 0 && !user?.organization?.subscription && (
+            <div className="text-white">
+
+              <div>
+                You need to subscribe to a team plat US$9/month
+              </div>
+
+              <Button asChild>
+                <a target="_blank" href={`${payment_link}?prefilled_email=${user?.email}`}>
+                  Subscribe
+                </a>
+              </Button>
+            </div>
+          )}
+
+          {user?.organization?.subscription == "ACTIVE" && (
+            <div className="text-white">
+              You are currently on a paid plan.
+            </div>
+          )}
+
           <form onSubmit={handleInviteMember} className="flex space-x-4">
             <div className="flex-1">
               <Input
@@ -641,21 +666,25 @@ export default function OrganizationSettingsPage() {
                 className="bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
               />
             </div>
-            <Button
-              type="submit"
-              disabled={inviting || !user?.isAdmin}
-              className="disabled:bg-gray-400 disabled:cursor-not-allowed bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white dark:text-zinc-100"
-              title={!user?.isAdmin ? "Only admins can invite new team members" : undefined}
-            >
-              <UserPlus className="w-4 h-4 mr-2" />
-              {inviting ? (
-                "Inviting..."
-              ) : (
-                <>
-                  <span className="hidden lg:inline">Send</span>Invite
-                </>
-              )}
-            </Button>
+
+
+            { user?.organization?.subscription == "ACTIVE" && (
+              <div>
+                <Button
+                  type="submit"
+                  disabled={inviting || !user?.isAdmin}
+                  className="disabled:bg-gray-400 disabled:cursor-not-allowed bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white dark:text-zinc-100"
+                  title={!user?.isAdmin ? "Only admins can invite new team members" : undefined}
+                >
+                  <UserPlus className="w-4 h-4 mr-2" />
+                  {inviting ?
+                    ("Inviting...") :
+                    (<><span className="hidden lg:inline">Send Invite</span></>)
+                  }
+                </Button>
+              </div>
+            )}
+
           </form>
 
           {/* Pending Invites */}
