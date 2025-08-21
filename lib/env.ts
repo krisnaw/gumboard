@@ -21,8 +21,8 @@ const schema = z.object({
   AUTH_SECRET: z.string(),
 
   // Stripe subscription
-  STRIPE_WEBHOOK_SECRET:z.string(),
-  STRIPE_SECRET_KEY:z.string(),
+  STRIPE_WEBHOOK_SECRET: z.string(),
+  STRIPE_SECRET_KEY: z.string(),
 });
 
 export const env = schema.parse(process.env);

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { db } from "@/lib/db";
-import {env} from "@/lib/env";
+import { env } from "@/lib/env";
 
 const stripe = new Stripe(env.STRIPE_SECRET_KEY!);
 

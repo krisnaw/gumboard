@@ -32,7 +32,7 @@ import {
 import { useUser } from "@/app/contexts/UserContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
-import {FREE_PLAN_LIMITS, SLACK_WEBHOOK_REGEX} from "@/lib/constants";
+import { FREE_PLAN_LIMITS, SLACK_WEBHOOK_REGEX } from "@/lib/constants";
 import { toast } from "sonner";
 
 interface OrganizationInvite {
@@ -59,7 +59,7 @@ interface SelfServeInvite {
 
 export default function OrganizationSettingsPage() {
   const { user, loading, refreshUser } = useUser();
-  const payment_link = process.env.NEXT_PUBLIC_STRIPE_PAYMENT_LINK // REQUIRED
+  const payment_link = process.env.NEXT_PUBLIC_STRIPE_PAYMENT_LINK; // REQUIRED
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [orgName, setOrgName] = useState("");
@@ -435,7 +435,7 @@ export default function OrganizationSettingsPage() {
     try {
       const res = await fetch("/api/subscription/cancel", {
         method: "POST",
-        body: JSON.stringify({subscriptionId: stripeSubscriptionId,}),
+        body: JSON.stringify({ subscriptionId: stripeSubscriptionId }),
       });
 
       if (!res.ok) {
@@ -707,82 +707,84 @@ export default function OrganizationSettingsPage() {
           )}
 
           <div className="text-white">
-            {user?.organization?.members && user?.organization?.members?.length < FREE_PLAN_LIMITS && (
-              <form onSubmit={handleInviteMember} className="flex space-x-4">
-                <div className="flex-1">
-                  <Input
-                    type="email"
-                    value={inviteEmail}
-                    onChange={(e) => setInviteEmail(e.target.value)}
-                    placeholder="Enter email address"
-                    required
-                    disabled={!user?.isAdmin}
-                    className="bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
-                  />
-                </div>
+            {user?.organization?.members &&
+              user?.organization?.members?.length < FREE_PLAN_LIMITS && (
+                <form onSubmit={handleInviteMember} className="flex space-x-4">
+                  <div className="flex-1">
+                    <Input
+                      type="email"
+                      value={inviteEmail}
+                      onChange={(e) => setInviteEmail(e.target.value)}
+                      placeholder="Enter email address"
+                      required
+                      disabled={!user?.isAdmin}
+                      className="bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
+                    />
+                  </div>
 
-                <div>
-                  <Button
-                    type="submit"
-                    disabled={inviting || !user?.isAdmin}
-                    className="disabled:bg-gray-400 disabled:cursor-not-allowed bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white dark:text-zinc-100"
-                    title={!user?.isAdmin ? "Only admins can invite new team members" : undefined}
-                  >
-                    <UserPlus className="w-4 h-4 mr-2" />
-                    {inviting ? (
-                      "Inviting..."
-                    ) : (
-                      <>
-                        <span className="hidden lg:inline">Send Invite</span>
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </form>
-            )}
+                  <div>
+                    <Button
+                      type="submit"
+                      disabled={inviting || !user?.isAdmin}
+                      className="disabled:bg-gray-400 disabled:cursor-not-allowed bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white dark:text-zinc-100"
+                      title={!user?.isAdmin ? "Only admins can invite new team members" : undefined}
+                    >
+                      <UserPlus className="w-4 h-4 mr-2" />
+                      {inviting ? (
+                        "Inviting..."
+                      ) : (
+                        <>
+                          <span className="hidden lg:inline">Send Invite</span>
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </form>
+              )}
           </div>
 
-          {user?.organization?.members && user?.organization?.members?.length >= FREE_PLAN_LIMITS && (
-            <>
-              {user?.organization?.subscription?.status == "ACTIVE" && (
-                <div>
-                  <form onSubmit={handleInviteMember} className="flex space-x-4">
-                    <div className="flex-1">
-                      <Input
-                        type="email"
-                        value={inviteEmail}
-                        onChange={(e) => setInviteEmail(e.target.value)}
-                        placeholder="Enter email address"
-                        required
-                        disabled={!user?.isAdmin}
-                        className="bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
-                      />
-                    </div>
+          {user?.organization?.members &&
+            user?.organization?.members?.length >= FREE_PLAN_LIMITS && (
+              <>
+                {user?.organization?.subscription?.status == "ACTIVE" && (
+                  <div>
+                    <form onSubmit={handleInviteMember} className="flex space-x-4">
+                      <div className="flex-1">
+                        <Input
+                          type="email"
+                          value={inviteEmail}
+                          onChange={(e) => setInviteEmail(e.target.value)}
+                          placeholder="Enter email address"
+                          required
+                          disabled={!user?.isAdmin}
+                          className="bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
+                        />
+                      </div>
 
-                    <div>
-                      <Button
-                        type="submit"
-                        disabled={inviting || !user?.isAdmin}
-                        className="disabled:bg-gray-400 disabled:cursor-not-allowed bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white dark:text-zinc-100"
-                        title={
-                          !user?.isAdmin ? "Only admins can invite new team members" : undefined
-                        }
-                      >
-                        <UserPlus className="w-4 h-4 mr-2" />
-                        {inviting ? (
-                          "Inviting..."
-                        ) : (
-                          <>
-                            <span className="hidden lg:inline">Send Invite</span>
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  </form>
-                </div>
-              )}
-            </>
-          )}
+                      <div>
+                        <Button
+                          type="submit"
+                          disabled={inviting || !user?.isAdmin}
+                          className="disabled:bg-gray-400 disabled:cursor-not-allowed bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white dark:text-zinc-100"
+                          title={
+                            !user?.isAdmin ? "Only admins can invite new team members" : undefined
+                          }
+                        >
+                          <UserPlus className="w-4 h-4 mr-2" />
+                          {inviting ? (
+                            "Inviting..."
+                          ) : (
+                            <>
+                              <span className="hidden lg:inline">Send Invite</span>
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    </form>
+                  </div>
+                )}
+              </>
+            )}
 
           {/* Pending Invites */}
           {invites.length > 0 && (
