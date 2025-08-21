@@ -59,7 +59,7 @@ interface SelfServeInvite {
 
 export default function OrganizationSettingsPage() {
   const { user, loading, refreshUser } = useUser();
-  const payment_link = process.env.NEXT_PUBLIC_STRIPE_PAYMENT_LINK; // REQUIRED
+  const payment_link = process.env.NEXT_PUBLIC_STRIPE_PAYMENT_LINK || "https://buy.stripe.com/" // REQUIRED
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [orgName, setOrgName] = useState("");

@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { db } from "@/lib/db";
+import {env} from "@/lib/env";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+const stripe = new Stripe(env.STRIPE_SECRET_KEY!);
 
 export async function POST(request: NextRequest) {
   const { subscriptionId } = await request.json();
@@ -24,8 +25,10 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ Success: "Ok" }, { status: 200 });
   } catch (err) {
+    let errorMessage = "Sorry, something wrong";
     if (err instanceof Error) {
-      console.log(err.message);
+      errorMessage = err.message;
     }
+    return NextResponse.json({ error: errorMessage }, { status: 400 });
   }
 }
