@@ -32,8 +32,9 @@ import {
 import { useUser } from "@/app/contexts/UserContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
-import { SLACK_WEBHOOK_REGEX } from "@/lib/constants";
+import {FREE_PLAN_LIMITS, SLACK_WEBHOOK_REGEX} from "@/lib/constants";
 import { toast } from "sonner";
+import {env} from "@/lib/env";
 
 interface OrganizationInvite {
   id: string;
@@ -59,10 +60,7 @@ interface SelfServeInvite {
 
 export default function OrganizationSettingsPage() {
   const { user, loading, refreshUser } = useUser();
-
-  const limit_member: number = 2;
-
-  const payment_link = process.env.NEXT_PUBLIC_PAYMENT_LINK; // REQUIRED
+  const payment_link = env.STRIPE_PAYMENT_LINK // REQUIRED
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [orgName, setOrgName] = useState("");
@@ -436,11 +434,9 @@ export default function OrganizationSettingsPage() {
 
   const handleCancelSubscription = async (stripeSubscriptionId: string) => {
     try {
-      const res = await fetch("/api/subscription", {
+      const res = await fetch("/api/subscription/cancel", {
         method: "POST",
-        body: JSON.stringify({
-          subscriptionId: stripeSubscriptionId,
-        }),
+        body: JSON.stringify({subscriptionId: stripeSubscriptionId,}),
       });
 
       if (!res.ok) {
@@ -474,6 +470,10 @@ export default function OrganizationSettingsPage() {
             <p className="text-zinc-600 dark:text-zinc-400">
               Manage your organization and team members.
             </p>
+          </div>
+
+          <div>
+            {user?.email}
           </div>
 
           <div>
@@ -648,7 +648,7 @@ export default function OrganizationSettingsPage() {
                 <div className="flex justify-between items-center w-full">
                   <div className="flex items-center space-x-2">
                     <Crown />
-                    <div className="font-medium">Free plan: 1 Member limit</div>
+                    <div className="font-medium">Free plan: 2 Member limit</div>
                   </div>
                   <div>
                     <Button asChild>
@@ -673,6 +673,19 @@ export default function OrganizationSettingsPage() {
             <p className="text-zinc-600 dark:text-zinc-400">
               Send invitations to new team members.
             </p>
+          </div>
+
+
+          <div>
+            <div className="text-white">
+              You are currently on a paid plan until
+            </div>
+
+            <div className="mt-2">
+              <Button>
+                Cancel Subscription
+              </Button>
+            </div>
           </div>
 
           {user?.organization?.subscription?.status == "ACTIVE" && (
@@ -713,7 +726,7 @@ export default function OrganizationSettingsPage() {
           )}
 
           <div className="text-white">
-            {user?.organization?.members && user?.organization?.members?.length < limit_member && (
+            {user?.organization?.members && user?.organization?.members?.length < FREE_PLAN_LIMITS && (
               <form onSubmit={handleInviteMember} className="flex space-x-4">
                 <div className="flex-1">
                   <Input
@@ -748,7 +761,7 @@ export default function OrganizationSettingsPage() {
             )}
           </div>
 
-          {user?.organization?.members && user?.organization?.members?.length >= limit_member && (
+          {user?.organization?.members && user?.organization?.members?.length >= FREE_PLAN_LIMITS && (
             <>
               {user?.organization?.subscription?.status == "ACTIVE" && (
                 <div>

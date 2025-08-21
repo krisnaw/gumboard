@@ -12,3 +12,5 @@ export const NOTE_COLORS = [
 export type NoteColor = (typeof NOTE_COLORS)[number];
 
 export const SLACK_WEBHOOK_REGEX = /slack/i;
+
+export const FREE_PLAN_LIMITS = 2

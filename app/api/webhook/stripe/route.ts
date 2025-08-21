@@ -4,6 +4,8 @@ import { db } from "@/lib/db";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
+export const runtime = "nodejs";
+
 export async function POST(request: NextRequest) {
   const body = await request.text();
   const signature = request.headers.get("stripe-signature")!;
@@ -106,7 +108,6 @@ export async function POST(request: NextRequest) {
             },
           });
         }
-
         break;
       default:
         return;
@@ -119,5 +120,5 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: errorMessage }, { status: 400 });
   }
 
-  return NextResponse.json({ Success: "Ok" }, { status: 200 });
+  return NextResponse.json({ success: "Ok" }, { status: 200 });
 }
