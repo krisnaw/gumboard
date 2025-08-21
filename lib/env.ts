@@ -23,7 +23,6 @@ const schema = z.object({
   // Stripe subscription
   STRIPE_WEBHOOK_SECRET:z.string(),
   STRIPE_SECRET_KEY:z.string(),
-  STRIPE_PAYMENT_LINK:z.string(),
 });
 
 export const env = schema.parse(process.env);

@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
           event.data.object.id
         );
 
-        // Get the subscription by customer and check if it already canceled or not
+        // Get the subscription by the customer and check if it already canceled or not
         const subscription = await db.subscription.findFirst({
           where: { stripeCustomerId: String(stripeSubscription.customer) },
         });

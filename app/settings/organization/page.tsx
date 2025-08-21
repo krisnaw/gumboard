@@ -34,7 +34,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
 import {FREE_PLAN_LIMITS, SLACK_WEBHOOK_REGEX} from "@/lib/constants";
 import { toast } from "sonner";
-import {env} from "@/lib/env";
 
 interface OrganizationInvite {
   id: string;
@@ -60,7 +59,7 @@ interface SelfServeInvite {
 
 export default function OrganizationSettingsPage() {
   const { user, loading, refreshUser } = useUser();
-  const payment_link = env.STRIPE_PAYMENT_LINK // REQUIRED
+  const payment_link = process.env.NEXT_PUBLIC_STRIPE_PAYMENT_LINK // REQUIRED
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [orgName, setOrgName] = useState("");
@@ -673,19 +672,6 @@ export default function OrganizationSettingsPage() {
             <p className="text-zinc-600 dark:text-zinc-400">
               Send invitations to new team members.
             </p>
-          </div>
-
-
-          <div>
-            <div className="text-white">
-              You are currently on a paid plan until
-            </div>
-
-            <div className="mt-2">
-              <Button>
-                Cancel Subscription
-              </Button>
-            </div>
           </div>
 
           {user?.organization?.subscription?.status == "ACTIVE" && (
