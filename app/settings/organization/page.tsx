@@ -444,6 +444,7 @@ export default function OrganizationSettingsPage() {
 
       toast.success("Subscription cancelled successfully!");
       await refreshUser();
+      router.refresh();
     } catch (err) {
       console.error("Error canceling subscription:", err);
     }
@@ -636,7 +637,7 @@ export default function OrganizationSettingsPage() {
           </div>
 
           {user?.organization?.members &&
-            user?.organization?.members?.length >= 2 &&
+            user?.organization?.members?.length >= FREE_PLAN_LIMITS &&
             !user?.organization?.subscription && (
               <div className="flex items-center justify-between p-2 lg:p-4 bg-yellow-50 dark:bg-zinc-200 rounded-lg border border-yellow-400 dark:border-zinc-100">
                 <div className="flex justify-between items-center w-full">
@@ -694,8 +695,7 @@ export default function OrganizationSettingsPage() {
 
           {user?.organization?.subscription?.status == "CANCELED" && (
             <div>
-              <div className="text-white">Your subscription is canceled.</div>
-
+              <div className="text-white dark:text-slate-600">Your subscription is canceled.</div>
               <div className="mt-2">
                 <Button asChild>
                   <a target="_blank" href={`${payment_link}?prefilled_email=${user?.email}`}>
