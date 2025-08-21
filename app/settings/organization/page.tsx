@@ -470,11 +470,6 @@ export default function OrganizationSettingsPage() {
               Manage your organization and team members.
             </p>
           </div>
-
-          <div>
-            {user?.email}
-          </div>
-
           <div>
             <Label htmlFor="orgName" className="text-zinc-800 dark:text-zinc-200">
               Organization Name
