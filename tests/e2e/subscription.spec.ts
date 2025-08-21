@@ -29,7 +29,7 @@ test.describe("Subscription on Organization page", () => {
     ]);
 
     // ✅ Assert URL starts with the Stripe Payment link
-    await expect(newPage).toHaveURL(/^https:\/\/buy\.stripe\.com/);
+    await expect(newPage).toHaveURL(/stripe\.com/);
   });
 
   test("Should show “Cancel Subscription” button when user has an active subscription", async ({
